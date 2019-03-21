@@ -1,7 +1,6 @@
 <template>
   <div class="hello-world">
     <p>This is Hello World Component</p>
-    <p></p>
   </div>
 </template>
 
