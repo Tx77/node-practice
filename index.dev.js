@@ -4,6 +4,7 @@ const glob = require("glob");
 const koaWebpack = require("koa-webpack");
 const koaStatic = require("koa-static");
 const history = require("koa2-history-api-fallback");
+const bodyParser = require("koa-bodyparser");
 
 const { PORT } = require("./config/server");
 const { getRouterPath, log } = require("./utils/framework");
@@ -11,6 +12,7 @@ const webpackConfig = require("./vue/webpack.config.js");
 
 const app = new Koa();
 const router = new Router();
+const mysql = require("./config/mysql");
 
 process.env.NODE_ENV = "development";
 
@@ -25,9 +27,12 @@ async function registerApp() {
   try {
     // node 端中间件和路由
     await registerMiddlewares();
+    // 连接mysql
+    await registerSqlConnected();
     await registerRoutes();
-    app.use(router.routes());
-    app.use(router.allowedMethods());
+    app.use(bodyParser());
+    app.use(router.routes()); // 添加路由中间件
+    app.use(router.allowedMethods()); // 对请求进行一些限制处理
 
     // 前端(vue)路由
     // 所有 navigate 请求重定向到 '/'，因为 webpack-dev-server 只服务这个路由
@@ -65,6 +70,7 @@ async function registerRoutes() {
       }
 
       files.forEach(actionPath => {
+        log.info(actionPath);
         let action = require(`./${actionPath}`);
         if (typeof action.handler !== "function") {
           log.warn(actionPath, "不是一个合法的 action，已经跳过");
@@ -105,12 +111,25 @@ async function registerMiddlewares() {
   });
 }
 
+async function registerSqlConnected() {
+  return new Promise((resolve, reject) => {
+    mysql.mysql
+      .column("name")
+      .select()
+      .from("users")
+      .then(res => {
+        console.log(res);
+      });
+    resolve();
+  });
+}
+
 async function registerWebpack() {
   return new Promise(resolve => {
     koaWebpack({
       config: webpackConfig,
       devMiddleware: {
-        stats: "minimal"
+        stats: "minimal" // Only output when errors or new compilation happen
       }
     }).then(middleware => {
       app.use(middleware);

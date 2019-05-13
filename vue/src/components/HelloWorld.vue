@@ -1,6 +1,6 @@
 <template>
   <div class="hello-world">
-    <p>This is Hello World Component</p>
+    <p>This is Hello World</p>
   </div>
 </template>
 
