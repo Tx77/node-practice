@@ -13,6 +13,7 @@ const webpackConfig = require("./vue/webpack.config.js");
 const app = new Koa();
 const router = new Router();
 const mysql = require("./config/mysql");
+const apiRouter = require("./server/router");
 
 process.env.NODE_ENV = "development";
 
@@ -29,9 +30,11 @@ async function registerApp() {
     await registerMiddlewares();
     // 连接mysql
     await registerSqlConnected();
+    // 注册路由
     await registerRoutes();
     app.use(bodyParser());
     app.use(router.routes()); // 添加路由中间件
+    app.use(apiRouter.routes()); // 添加api路由
     app.use(router.allowedMethods()); // 对请求进行一些限制处理
 
     // 前端(vue)路由
@@ -58,7 +61,9 @@ async function registerApp() {
     log.error("开发环境服务器启动失败\n\n");
   }
 }
-
+/**
+ * 注册路由
+ */
 async function registerRoutes() {
   return new Promise((resolve, reject) => {
     glob("actions/**/*.js", (err, files) => {
@@ -68,10 +73,9 @@ async function registerRoutes() {
         reject();
         return;
       }
-
       files.forEach(actionPath => {
-        log.info(actionPath);
         let action = require(`./${actionPath}`);
+        log.info(actionPath);
         if (typeof action.handler !== "function") {
           log.warn(actionPath, "不是一个合法的 action，已经跳过");
           return;
@@ -86,7 +90,9 @@ async function registerRoutes() {
     });
   });
 }
-
+/**
+ * 注册中间件
+ */
 async function registerMiddlewares() {
   return new Promise((resolve, reject) => {
     glob("middlewares/**/*.js", (err, files) => {
@@ -110,20 +116,24 @@ async function registerMiddlewares() {
     });
   });
 }
-
+/**
+ * 注册数据库连接
+ */
 async function registerSqlConnected() {
   return new Promise((resolve, reject) => {
-    mysql.mysql
-      .column("name")
-      .select()
-      .from("users")
-      .then(res => {
-        console.log(res);
-      });
+    // mysql.knex
+    //   .column("phone_number")
+    //   .select()
+    //   .from("users")
+    //   .then(res => {
+    //     console.log(res);
+    //   });
     resolve();
   });
 }
-
+/**
+ * 注册webpack
+ */
 async function registerWebpack() {
   return new Promise(resolve => {
     koaWebpack({

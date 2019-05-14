@@ -1,4 +1,4 @@
-const mysql = require("knex")({
+const knex = require("knex")({
   client: "mysql",
   connection: {
     host: "127.0.0.1",
@@ -8,4 +8,4 @@ const mysql = require("knex")({
   }
 });
 
-module.exports = { mysql };
+module.exports = { knex };
