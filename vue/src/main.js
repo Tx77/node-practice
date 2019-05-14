@@ -8,6 +8,7 @@ import Antd from "ant-design-vue";
 import App from "./App";
 import Router from "./router/router";
 import store from "./store";
+// import "./utils/interceptor"; // 拦截器
 
 import "@/style/common.less";
 import "nprogress/nprogress.css";
